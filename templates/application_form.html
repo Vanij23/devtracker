@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if application else 'Add' }} Application — DevTracker{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card p-4 mt-2">
+      <h3 class="mb-3">{{ 'Edit application' if application else 'Add a new application' }}</h3>
+      <form method="POST">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="company_name" class="form-label">Company</label>
+            <input type="text" class="form-control" id="company_name" name="company_name"
+                   value="{{ application.company_name if application else '' }}" required>
+          </div>
+          <div class="col-md-6">
+            <label for="role_title" class="form-label">Role</label>
+            <input type="text" class="form-control" id="role_title" name="role_title"
+                   value="{{ application.role_title if application else '' }}" required>
+          </div>
+          <div class="col-md-6">
+            <label for="applied_date" class="form-label">Applied date</label>
+            <input type="date" class="form-control" id="applied_date" name="applied_date"
+                   value="{{ application.applied_date.isoformat() if application and application.applied_date else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" class="form-control" id="location" name="location"
+                   value="{{ application.location if application else '' }}" placeholder="e.g. Remote, Bangalore">
+          </div>
+          <div class="col-12">
+            <label for="job_link" class="form-label">Job posting link</label>
+            <input type="url" class="form-control" id="job_link" name="job_link"
+                   value="{{ application.job_link if application else '' }}" placeholder="https://...">
+          </div>
+          <div class="col-12">
+            <label for="notes" class="form-label">Notes</label>
+            <textarea class="form-control" id="notes" name="notes" rows="3">{{ application.notes if application else '' }}</textarea>
+          </div>
+        </div>
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-accent">{{ 'Save changes' if application else 'Add application' }}</button>
+          <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

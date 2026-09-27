@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}DevTracker — Track every application{% endblock %}
+{% block content %}
+<div class="hero">
+  <span class="ai-badge mb-3">✦ Now with AI Copilot</span>
+  <h1 class="display-4 mt-3">Stop losing track of your applications.</h1>
+  <p class="lead mt-3">
+    DevTracker replaces the spreadsheet with a real dashboard — log every
+    application, follow it through Applied → OA → Interview → Offer, and
+    get AI-generated prep tips and feedback along the way.
+  </p>
+  <div class="mt-4">
+    <a href="{{ url_for('signup') }}" class="btn btn-accent btn-lg me-2">Get started</a>
+    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Log in</a>
+  </div>
+</div>
+
+<div class="row g-4 mt-2 mb-5">
+  <div class="col-md-4">
+    <div class="card p-4 h-100">
+      <div class="feature-icon">◎</div>
+      <h5>Track every stage</h5>
+      <p class="text-secondary mb-0">Applied, OA, Interview, Offer, or Rejected — update status with one click.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-4 h-100">
+      <div class="feature-icon">✦</div>
+      <h5>AI-powered prep & feedback</h5>
+      <p class="text-secondary mb-0">Get tailored interview prep tips, or feedback on what to improve after a rejection.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-4 h-100">
+      <div class="feature-icon">⇪</div>
+      <h5>Bulk import</h5>
+      <p class="text-secondary mb-0">Paste your existing application list from Internshala or LinkedIn — no manual re-entry.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

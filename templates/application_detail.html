@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ application.company_name }} — DevTracker{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+  <div>
+    <h2 class="mb-1">{{ application.company_name }}</h2>
+    <p class="text-secondary mb-0">{{ application.role_title }}</p>
+  </div>
+  <span class="badge badge-{{ application.status }} fs-6">
+    {{ application.status.title() if application.status != 'oa' else 'OA' }}
+  </span>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-8">
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">Details</h5>
+      <div class="row g-3 text-secondary">
+        <div class="col-6"><strong class="text-dark">Location:</strong> {{ application.location or '—' }}</div>
+        <div class="col-6"><strong class="text-dark">Applied:</strong> {{ application.applied_date.strftime('%b %d, %Y') if application.applied_date else '—' }}</div>
+        <div class="col-12">
+          <strong class="text-dark">Job link:</strong>
+          {% if application.job_link %}
+            <a href="{{ application.job_link }}" target="_blank" class="text-accent">{{ application.job_link }}</a>
+          {% else %} — {% endif %}
+        </div>
+        <div class="col-12"><strong class="text-dark">Notes:</strong><br>{{ application.notes or '—' }}</div>
+      </div>
+    </div>
+
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">Interview rounds</h5>
+      {% if application.rounds %}
+        <ul class="list-unstyled mb-3">
+          {% for round in application.rounds %}
+          <li class="border-bottom border-secondary py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-semibold">{{ round.round_name }}</div>
+                <div class="text-secondary small">
+                  {{ round.scheduled_at.strftime('%b %d, %Y · %I:%M %p') if round.scheduled_at else 'No time set' }}
+                </div>
+              </div>
+              <form method="POST" action="{{ url_for('update_round_status', round_id=round.id) }}">
+                <select name="status" class="form-select form-select-sm"
+                        onchange="this.form.submit()" style="width: auto;">
+                  {% for s in ['pending', 'cleared', 'failed'] %}
+                    <option value="{{ s }}" {{ 'selected' if round.status == s }}>{{ s.title() }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-secondary">No interview rounds logged yet.</p>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('new_round', app_id=application.id) }}" class="row g-2">
+        <div class="col-md-5">
+          <input type="text" class="form-control form-control-sm" name="round_name"
+                 placeholder="e.g. Round 1 — Technical" required>
+        </div>
+        <div class="col-md-4">
+          <input type="datetime-local" class="form-control form-control-sm" name="scheduled_at">
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-accent btn-sm w-100">Add round</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card p-4 ai-panel">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <h5 class="mb-0">AI Copilot</h5>
+          <span class="ai-badge">✦ AI</span>
+        </div>
+        <form method="POST" action="{{ url_for('generate_notes', app_id=application.id) }}">
+          <button type="submit" class="btn btn-outline-light btn-sm">
+            {{ 'Regenerate' if application.ai_notes else 'Generate' }} advice
+          </button>
+        </form>
+      </div>
+      {% if application.ai_notes %}
+        <p class="text-secondary small mb-2">
+          Generated for status: <strong>{{ application.ai_notes_generated_for_status|title }}</strong>
+          {% if application.ai_notes_generated_for_status != application.status %}
+            <span class="text-warning">(status has changed since — regenerate for fresh advice)</span>
+          {% endif %}
+        </p>
+        <div style="white-space: pre-line;">{{ application.ai_notes }}</div>
+      {% else %}
+        <p class="text-secondary mb-0">
+          {% if application.status == 'rejected' %}
+            Get AI feedback on what to improve for next time.
+          {% elif application.status == 'offer' %}
+            Get quick negotiation pointers.
+          {% else %}
+            Get AI-generated prep tips for this role.
+          {% endif %}
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-4 mb-3">
+      <h5 class="mb-3">Update status</h5>
+      <form method="POST" action="{{ url_for('update_status', app_id=application.id) }}">
+        <select name="status" class="form-select mb-3" onchange="this.form.submit()">
+          {% for s in ['applied', 'oa', 'interview', 'offer', 'rejected'] %}
+            <option value="{{ s }}" {{ 'selected' if application.status == s }}>
+              {{ s.title() if s != 'oa' else 'OA' }}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+
+    <div class="card p-4">
+      <div class="d-grid gap-2">
+        <a href="{{ url_for('edit_application', app_id=application.id) }}" class="btn btn-outline-light">Edit</a>
+        <form method="POST" action="{{ url_for('delete_application', app_id=application.id) }}"
+              onsubmit="return confirm('Delete this application? This cannot be undone.');">
+          <button type="submit" class="btn btn-outline-danger w-100">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

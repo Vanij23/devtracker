@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}DevTracker{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('index') }}">Dev<span class="text-accent">Tracker</span></a>
+      <div class="d-flex align-items-center gap-3">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('dashboard') }}" class="nav-link d-inline">Dashboard</a>
+          <a href="{{ url_for('bulk_import') }}" class="nav-link d-inline">Bulk Import</a>
+          <a href="{{ url_for('new_application') }}" class="btn btn-accent btn-sm">+ Add</a>
+          <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">Log out</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link d-inline">Log in</a>
+          <a href="{{ url_for('signup') }}" class="btn btn-accent btn-sm">Sign up</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  {% if current_user.is_authenticated %}
+  <div id="assistant-widget">
+    <button id="assistant-toggle" aria-label="Ask DevTracker">✦</button>
+    <div id="assistant-panel">
+      <div id="assistant-header">
+        <span>Ask DevTracker</span>
+        <button id="assistant-close" aria-label="Close">×</button>
+      </div>
+      <div id="assistant-messages">
+        <div class="assistant-msg assistant-msg-bot">
+          Hi! Ask me about interview prep, resume tips, or your job search in general.
+        </div>
+      </div>
+      <form id="assistant-form">
+        <input type="text" id="assistant-input" placeholder="Type a question..." autocomplete="off">
+        <button type="submit">→</button>
+      </form>
+    </div>
+  </div>
+  <style>
+    #assistant-widget { position: fixed; bottom: 24px; right: 24px; z-index: 1000; font-family: 'Inter', sans-serif; }
+    #assistant-toggle {
+      width: 56px; height: 56px; border-radius: 50%; border: none;
+      background: linear-gradient(135deg, #14B8A6, #0F6B60);
+      color: white; font-size: 1.4rem; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(20,184,166,0.4);
+    }
+    #assistant-panel {
+      display: none; position: absolute; bottom: 70px; right: 0;
+      width: 340px; max-height: 460px; background: #0B3D39;
+      border: 1px solid #14544D; border-radius: 14px; overflow: hidden;
+      flex-direction: column; box-shadow: 0 12px 36px rgba(0,0,0,0.3);
+    }
+    #assistant-panel.open { display: flex; }
+    #assistant-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.9rem 1rem; background: #0F6B60; color: #F5F8F7; font-weight: 600;
+    }
+    #assistant-close { background: none; border: none; color: #CFE8E4; font-size: 1.3rem; cursor: pointer; line-height: 1; }
+    #assistant-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .assistant-msg { padding: 0.6rem 0.85rem; border-radius: 10px; font-size: 0.88rem; line-height: 1.4; white-space: pre-line; }
+    .assistant-msg-bot { background: #14544D; color: #F5F8F7; align-self: flex-start; max-width: 90%; }
+    .assistant-msg-user { background: #FFC53D; color: #12312C; align-self: flex-end; max-width: 85%; }
+    #assistant-form { display: flex; border-top: 1px solid #14544D; }
+    #assistant-input {
+      flex: 1; background: #0B3D39; border: none; color: #F5F8F7;
+      padding: 0.7rem 0.9rem; font-size: 0.88rem;
+    }
+    #assistant-input:focus { outline: none; }
+    #assistant-form button {
+      background: #14B8A6; border: none; color: #0B3D39; width: 44px; font-size: 1.1rem; cursor: pointer; font-weight: 700;
+    }
+  </style>
+  <script>
+    (function () {
+      const toggle = document.getElementById('assistant-toggle');
+      const panel = document.getElementById('assistant-panel');
+      const closeBtn = document.getElementById('assistant-close');
+      const form = document.getElementById('assistant-form');
+      const input = document.getElementById('assistant-input');
+      const messages = document.getElementById('assistant-messages');
+
+      toggle.addEventListener('click', () => panel.classList.toggle('open'));
+      closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+
+      function addMessage(text, sender) {
+        const div = document.createElement('div');
+        div.className = 'assistant-msg assistant-msg-' + sender;
+        div.textContent = text;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const question = input.value.trim();
+        if (!question) return;
+        addMessage(question, 'user');
+        input.value = '';
+        addMessage('Thinking...', 'bot');
+
+        try {
+          const res = await fetch('/api/assistant', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question }),
+          });
+          const data = await res.json();
+          messages.lastChild.remove();
+          addMessage(data.answer || 'No response.', 'bot');
+        } catch (err) {
+          messages.lastChild.remove();
+          addMessage('Something went wrong. Try again.', 'bot');
+        }
+      });
+    })();
+  </script>
+  {% endif %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

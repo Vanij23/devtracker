@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — DevTracker{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h2 class="mb-1">Your applications</h2>
+    <p class="text-secondary mb-0">Everything you're tracking, in one place.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('bulk_import') }}" class="btn btn-outline-light">Bulk import</a>
+    <a href="{{ url_for('new_application') }}" class="btn btn-accent">+ Add application</a>
+  </div>
+</div>
+
+<div class="stage-bar mb-4">
+  <div class="stage-segment" style="--seg-color: var(--applied);">
+    <span class="stage-number">{{ status_counts.get('applied', 0) }}</span>
+    <span class="stage-label">Applied</span>
+  </div>
+  <div class="stage-segment" style="--seg-color: var(--oa);">
+    <span class="stage-number">{{ status_counts.get('oa', 0) }}</span>
+    <span class="stage-label">OA</span>
+  </div>
+  <div class="stage-segment" style="--seg-color: var(--interview);">
+    <span class="stage-number">{{ status_counts.get('interview', 0) }}</span>
+    <span class="stage-label">Interviewing</span>
+  </div>
+  <div class="stage-segment" style="--seg-color: var(--offer);">
+    <span class="stage-number">{{ status_counts.get('offer', 0) }}</span>
+    <span class="stage-label">Offers</span>
+  </div>
+  <div class="stage-segment" style="--seg-color: var(--rejected);">
+    <span class="stage-number">{{ status_counts.get('rejected', 0) }}</span>
+    <span class="stage-label">Rejected</span>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <span class="text-secondary small">{{ total }} total · {{ response_rate }}% response rate</span>
+</div>
+
+{% if total %}
+<div class="board">
+  {% for status in ['applied', 'oa', 'interview', 'offer', 'rejected'] %}
+  <div class="board-column">
+    <div class="board-column-head">
+      <span>
+        <span class="dot" style="background: var(--{{ status }});"></span>
+        <span class="board-column-title">{{ status.title() if status != 'oa' else 'OA' }}</span>
+      </span>
+      <span class="board-column-count">{{ columns[status]|length }}</span>
+    </div>
+    <div class="board-column-body">
+      {% for app in columns[status] %}
+      <div class="board-card">
+        <a href="{{ url_for('view_application', app_id=app.id) }}" class="board-card-title">{{ app.company_name }}</a>
+        <p class="board-card-role">{{ app.role_title }}</p>
+        <div class="board-card-meta">
+          <span>{{ app.location or '—' }}</span>
+          {% if status in ['applied', 'oa', 'interview'] %}
+          <form method="POST" action="{{ url_for('advance_status', app_id=app.id) }}">
+            <button type="submit" class="board-card-advance" title="Move to next stage">Move →</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="board-empty">Nothing here yet</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+  <p class="text-secondary">No applications yet.</p>
+  <div class="d-flex gap-2 justify-content-center mt-3">
+    <a href="{{ url_for('new_application') }}" class="btn btn-accent">Add your first application</a>
+    <a href="{{ url_for('bulk_import') }}" class="btn btn-outline-light">Or bulk import</a>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

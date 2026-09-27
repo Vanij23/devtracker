@@ -1,0 +1,23 @@
+# Environment variables (never commit secrets)
+.env
+
+# Virtual environment
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Flask instance folder / local SQLite DB
+instance/
+*.db
+
+# Vercel
+.vercel
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
