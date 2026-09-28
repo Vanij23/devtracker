@@ -55,19 +55,20 @@ without issue.
 ```dotenv
 SECRET_KEY=any-random-string
 DATABASE_URL=sqlite:///devtracker.db     # local dev
-ANTHROPIC_API_KEY=                        # optional — see below
+GOOGLE_API_KEY=                           # optional, free — see below
 ```
 
 For a real Postgres database (needed for deployment), get a free one at
 [neon.tech](https://neon.tech) and use the connection string it gives you
 instead of the SQLite URL.
 
-### Enabling real AI responses
+### Enabling real AI responses (free)
 
-Without `ANTHROPIC_API_KEY` set, the AI Copilot, Ask DevTracker widget, and
+Without `GOOGLE_API_KEY` set, the AI Copilot, Ask DevTracker widget, and
 Bulk Import all fall back to template-based responses instead of crashing.
-To get real AI-generated answers, get a key at
-[console.anthropic.com](https://console.anthropic.com) and add it to `.env`.
+To get real AI-generated answers at no cost, get a free key at
+[aistudio.google.com/apikey](https://aistudio.google.com/apikey) (Google's
+Gemini API — no credit card required) and add it to `.env`.
 
 ## Architecture
 
@@ -101,7 +102,7 @@ Each `Application` belongs to a `User`; each `InterviewRound` belongs to an
 5. In the project's Environment Variables settings, add:
    - `DATABASE_URL` — your Neon connection string
    - `SECRET_KEY` — a random string
-   - `ANTHROPIC_API_KEY` — optional
+   - `GOOGLE_API_KEY` — optional, free — get one at aistudio.google.com/apikey
 6. Deploy. Every push to `main` redeploys automatically.
 
 **Why Neon and not SQLite in production:** Vercel's filesystem is read-only
